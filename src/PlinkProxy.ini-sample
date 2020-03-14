@@ -1,0 +1,88 @@
+; This is an annotated sample version of the PlinkProxy.ini file
+; to document the various configuration values. 
+
+; ----------------------------------------------------------------------------------
+; Globals
+; ----------------------------------------------------------------------------------
+; The global section sets the default values which are used for all
+; connections 
+
+[Globals]
+; Login name of the user opening the connection.
+login         = joedoe
+; Path to the putty binaries. Both `plink.exe` and `pageant.exe` must be present.
+path          = %UserProfile%\PortableApps\PuttyPortable\App\putty
+; Path to the ssh private keys in `.ppk` format.
+ssh_keys_dir  = %UserProfile%\PortableApps\PuttyPortable\Data\ssh-keys
+; Name of the jump host used for all other connections.
+first_hop     = admin.sample.net
+; Default plink options used when establishing a connection.
+plink_options = -N -A -v -batch
+
+; ----------------------------------------------------------------------------------
+; Socks Tunnels
+; ----------------------------------------------------------------------------------
+; Socks tunnel require a client to speak the SOCKS5 protocol.
+; To the best of my knowledge all web browsers are able to communicate using SOCKS5.
+; In order to effectively use various SOCKS Proxies the use of a browser plugin
+; like FoxyProxy is encouraged. 
+; Firefox: Under Add-ons search for `FoxyProxy Standad`
+; Chrome: Search Extensions for `FoxyProxy Standard`
+
+[Socks:8880]
+; This is a single hop connection. Since the first_hop 
+; in the [Globals] section and the jump_host match 
+; a simple connection will be used for `plink`, e.g:
+; `plink -D 8880 joedoe@admin.sample.net` 
+name = admin-zone
+enabled = yes
+setup = no
+jump_host = admin.sample.net
+
+[Socks:8881]
+; This is a tunnel where the jump_host is acting as a 
+; a second hop. The simplified plink command looks liek 
+; `plink -proxycmd "plink -nc admin.dmz.sample.net:22 joedoe@admin.sample.net" ^
+;    -D 8881 joedoe@admin.dmz.sample.net`
+name = dmz
+enabled = no
+setup = no
+jump_host = admin.dmz.sample.net
+
+; ----------------------------------------------------------------------------------
+; Local Tunnels
+; ----------------------------------------------------------------------------------
+; Local Tunnels opened by an SSH connection do not require a special settings in
+; the application e.g. web browser. However in some cases redirects to a secured 
+; connection or the fully qualified domain name get in the way of using a SSH
+; tunnel.
+
+[LocalTunnel:11636]
+; A local tunnel with a forward to a LDAP server on port 636 (ldaps)
+; Note this tunnel is disabled `enabled = no`
+; `plink -L 11636:ldap.sample.net:636 joedoe@admin.sample.net`
+; In the LDAP Tool of choice set the server and port to `localhost:11636`
+; when setting up the connection.
+name = admin-ldap
+enabled = no
+setup = no
+jump_host = admin.sample.net
+target_host = ldap.sample.net
+target_port  = 636
+
+[LocalTunnel:12443]
+; A local tunnel with a forward to a LDAP server on port 636 (ldaps)
+; Note this tunnel is slated to be setup `setup = yes` and will
+; the only one being executed when the [Setup Proxies] button is pressed.
+; After setup has been conducted change the value to `no`. The simplified
+; plink command finally executed looks like the one below. 
+; `plink -proxycmd "plink -nc admin.dmz.sample.net:22 joedoe@admin.sample.net" ^
+;    -L 12443:ldap.dmz.sample.net:443 joedoe@admin.dmz.sample.net`
+; In the local webbrowser use 'https://localhost:12443/' to connect to the 
+; web server
+name = dmz-http
+enabled = yes
+setup = yes
+jump_host = admin.dmz.sample.net
+target_host = www.dmz.sample.net
+target_port = 443
