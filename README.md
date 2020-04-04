@@ -88,7 +88,7 @@ target_port  = 636
 * `target_host` forward address or ip when leaving the tunnel.
 * `target_port` forward port when leaving the tunnel.
 
-Command line equivalent of `-L 11389:ldap.dmz.acme.org:636`
+Command line equivalent of `-L 11636:ldap.dmz.acme.org:636`
 
 
 ### Further Reading
