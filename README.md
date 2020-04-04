@@ -1,3 +1,6 @@
+[![Build](https://github.com/uroesch/PlinkProxy/workflows/build-release/badge.svg)](https://github.com/uroesch/PlinkProxy/actions?query=workflow%3Abuild-release)
+[![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/uroesch/PlinkProxy?include_prereleases)](https://github.com/uroesch/PlinkProxy/releases)
+
 # PlinkProxy
 
 ## Executive Overview
@@ -11,7 +14,7 @@ host hoping.
 ## Prerequisites
 * Windows 7 or higher
 * [plink](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html)
-* [peagent](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html)
+* [pageant](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html)
 * [ssh-keys](https://en.wikipedia.org/wiki/Secure_Shell#Authentication:_OpenSSH_Key_management)
 
 ## Build Dependencies
