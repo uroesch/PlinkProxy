@@ -36,6 +36,7 @@ exit /b
   :: remove spaces and quotes
   set VERSION=%VERSION: =%
   set VERSION=%VERSION:"=%
+  set VERSION=v%VERSION%
   echo Release number is %VERSION%
   echo %DELIMITER%
 goto :EOF

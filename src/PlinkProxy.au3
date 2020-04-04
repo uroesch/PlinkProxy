@@ -44,14 +44,18 @@ Global $ActiveButton     = Null
 Global $Debug            = True
 Global $RefreshInterval  = 5000
 Global $StatusUpdate     = False
+Global $TunnelStatus     = _AssocArray()
 Global $LastTimerUpdate  = TimerInit()
 Global $StatusTabParent  = Null
+Global $StatusHeader[5]  = ["Name", "Type", "Port", "Status", "PID"]
 Global $FlyoutFactor     = 4
 
 ; --------------------------------------------------------------------------------------------------------------
 ; Options
 ; --------------------------------------------------------------------------------------------------------------
 Opt("GUIResizeMode", $GUI_DOCKALL)
+Opt("MustDeclareVars", 1)
+
 ; --------------------------------------------------------------------------------------------------------------
 ; Functions
 ; --------------------------------------------------------------------------------------------------------------
@@ -117,6 +121,7 @@ EndFunc
 ; --------------------------------------------------------------------------------------------------------------
 
  Func EvaluatePath($Path)
+    Local $ModifiedPath
     If Not StringInStr($Path, '%') Then
        Return $Path
     EndIf
@@ -244,8 +249,8 @@ Func DigTunnels()
         Case Else
             MsgBox(1, "Tunnel Type Error", "Tunnel type " & $TunnelId & " not found!")
         EndSelect
+        UpdateStatusRow($TunnelId)
     Next
-    UpdateStatusList()
 EndFunc
 
 ; --------------------------------------------------------------------------------------------------------------
@@ -286,7 +291,7 @@ EndFunc
 ; --------------------------------------------------------------------------------------------------------------
 
 Func StartPageant()
-    $Pageant = 'Pageant.exe'
+    Local $Pageant = 'Pageant.exe'
     If Not ProcessExists($Pageant) Then
         ShellExecute($Pageant, FindSshKeys(), SshKeysDir(), "", @SW_HIDE)
         Logger('Info', 'Starting peageant to load ssh keys')
@@ -394,9 +399,17 @@ EndFunc
 ; --------------------------------------------------------------------------------------------------------------
 Func CreateStatusList()
     If Not ($Tabs('ConnStatus')) Then
-        $Tabs('ConnStatus') = GUICtrlCreateListView("Name|Type|Port|Status|PID", _
-          $GuiWidth, 0, ($GuiWidth * ($FlyoutFactor - 1)) - 5, $GuiHeight - 25)
-        _GUICtrlListView_SetExtendedListViewStyle($Tabs('ConnStatus'), $LVS_EX_DOUBLEBUFFER)
+        Local $ListWidth   = ($GuiWidth * ($FlyoutFactor - 1)) - 5
+	Local $ColumnWidth = ($ListWidth / UBound($StatusHeader)) - Ubound($StatusHeader)
+        $Tabs('ConnStatus') = GUICtrlCreateListView("", $GuiWidth, 0, $ListWidth, $GuiHeight - 25)
+        _GUICtrlListView_SetExtendedListViewStyle( _
+	    $Tabs('ConnStatus'), _
+	    BitOR($LVS_EX_DOUBLEBUFFER, $LVS_EX_FULLROWSELECT, $LVS_EX_SUBITEMIMAGES) _
+	)
+	For $Index = 0 To UBound($StatusHeader) - 1
+	    _GUICtrlListView_InsertColumn($Tabs('ConnStatus'), $Index, $StatusHeader[$Index], $ColumnWidth)
+	Next
+        GUISetState(@SW_SHOW)
     EndIf
 EndFunc
 
@@ -408,25 +421,66 @@ Func UpdateStatusList()
     CreateStatusList()
     GuiCtrlSetBkColor($Tabs('ConnStatus'), $CanvasColor)
     GuiCtrlSetColor($Tabs('ConnStatus'), $TextColor)
-    _GuiCtrlListView_DeleteAllItems($Tabs('ConnStatus'))
     Local $Tunnels = FetchTunnels()
     For $Index = 1 To UBound($Tunnels) - 1
-        Local $TunnelId  = $Tunnels[$Index]
-        Local $Name      = FetchEntry($TunnelId, 'name')
-        Local $Type      = (StringSplit($TunnelId, ':'))[1]
-        Local $Port      = (StringSplit($TunnelId, ':'))[2]
-        Local $Status    = CheckTunnel($TunnelId) ? 'Up' : 'Down'
-        Local $RowValues = [$Name, $Type, $Port, $Status, $TunnelPids($TunnelId)]
-        Local $Row = GUICtrlCreateListViewItem(_ArrayToString($RowValues, '|'), $Tabs('ConnStatus'))
-        If ($Status == 'Up') Then
-            GuiCtrlSetBkColor($Row, $ButtonActiveBg)
-            GUICtrlSetColor($Row, $ButtonActiveFg)
-        Else
-            GuiCtrlSetBkColor($Row, $COLOR_PURPLE)
-            GUICtrlSetColor($Row, $TextColor)
-        EndIf
+      Local $TunnelId = $Tunnels[$Index]
+      UpdateStatusRow($TunnelId)
     Next
     $LastTimerUpdate = TimerInit()
+EndFunc
+
+; --------------------------------------------------------------------------------------------------------------
+
+Func UpdateStatusRow($TunnelId)
+    CreateStatusList()
+    Local $Name      = FetchEntry($TunnelId, 'name')
+    Local $Type      = (StringSplit($TunnelId, ':'))[1]
+    Local $Port      = (StringSplit($TunnelId, ':'))[2]
+    Local $Status    = CheckTunnel($TunnelId) ? 'Up' : 'Down'
+    Local $RowValues = [$Name, $Type, $Port, $Status, $TunnelPids($TunnelId)]
+    CreateStatusRow($TunnelId, $RowValues)
+EndFunc
+
+; --------------------------------------------------------------------------------------------------------------
+
+Func FindStatusRow($Name)
+    Return _GUICtrlListView_FindText($Tabs('ConnStatus'), $Name, -1, False)
+EndFunc
+
+; --------------------------------------------------------------------------------------------------------------
+
+Func CreateStatusRow($TunnelId, $RowValues)
+    Local $Position = FindStatusRow($RowValues[0])
+    _GUICtrlListView_BeginUpdate($Tabs('ConnStatus'))
+    If $Position == -1 Then
+        ;MsgBox(-1, 'tunnelid', $Tunnelid)
+        ; I could not figure out a way to color each row without the following construct. It works but I think
+	; I have to seriously look at DLLStructCreate() to have everything in one Handy location.	
+	Local $Handle = GUICtrlCreateListViewItem(_ArrayToString($RowValues, '|'), $Tabs('ConnStatus'))
+	$TunnelStatus($TunnelId) = $Handle
+        ColorStatusRow($Handle, $RowValues[3])
+    Else
+        ; Only Update Stautus and PID
+        For $Index = 3 To UBound($RowValues) - 1
+            _GUICtrlListView_SetItem($Tabs('ConnStatus'), $RowValues[$Index], $Position, $Index)
+        Next
+	ColorStatusRow($TunnelStatus($TunnelId), $RowValues[3])
+    EndIf
+    _GUICtrlListView_EndUpdate($Tabs('ConnStatus'))
+EndFunc
+
+
+; --------------------------------------------------------------------------------------------------------------
+
+Func ColorStatusRow($Handle, $Status)
+    ; MsgBox(-1, $Handle, "Status: " & $Status)
+    If ($Status == 'Up') Then
+        GuiCtrlSetBkColor($Handle, $ButtonActiveBg)
+        GUICtrlSetColor($Handle, $ButtonActiveFg)
+    Else
+        GuiCtrlSetBkColor($Handle, $COLOR_PURPLE)
+        GUICtrlSetColor($Handle, $TextColor)
+    EndIf
 EndFunc
 
 ; --------------------------------------------------------------------------------------------------------------
@@ -454,7 +508,7 @@ Func StartProxyGui()
 
     $Buttons('ConnStatus') = _CreateTabButton("Connection Status", 2, 1)
     $Buttons('SessionLog') = _CreateTabButton("Session Log", 2, 2)
-    InitTabs()   
+    InitTabs()
 
     GUICtrlCreateLabel($AppTitle, IndentRight(), 20)
     GUICtrlSetColor(-1, $TextColor)
