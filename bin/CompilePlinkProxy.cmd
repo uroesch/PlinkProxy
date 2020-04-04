@@ -3,8 +3,9 @@
 :: ----------------------------------------------------------------------------
 :: Globals
 :: ----------------------------------------------------------------------------
-set PATH=%PATH%;%ProgramFiles(x86)%\AutoIt3\Aut2Exe
 set SCRIPT_DIR=%~dp0
+set PATH=%PATH%;%ProgramFiles(x86)%\AutoIt3\Aut2Exe
+set PATH=%PATH%;%SCRIPT_DIR%\..\install\Aut2Exe
 set BASE_DIR=%SCRIPT_DIR%..\
 set SOURCE_DIR=%BASE_DIR%src
 set RELEASE_DIR=%BASE_DIR%releases
