@@ -117,10 +117,13 @@ There is a small cmd build script (`CompilePlinkProxy.cmd`) to compile and ZIP u
 ```
 C:> bin\CompilePlinkProxy.cmd
 ```
+## Known Issues
+- [ ] Update of status list not working correctly if name of connection was changed.
+- [ ] Setup mode constains logic errors and does not work as initially intended.
 
 ## Todo
-* Make it a tray application.
-* Enable overriding defaults from the Globals section in each of the connections.
+- [ ] Make it a tray application.
+- [x] Enable overriding defaults from the Globals section in each of the connections.
 
 [putty]: https://www.chiark.greenend.org.uk/~sgtatham/putty/
 [foxyproxy]: https://www.chiark.greenend.org.uk/~sgtatham/putty/
