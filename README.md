@@ -6,19 +6,27 @@
 ## Executive Overview
 
 PlinkProxy is a small wrapper and INI configuration file around the `plink`
-command from the `Putty` suite of tools. It is meant to dig ssh tunnels and
-create socks proxies into various networks to cut down on excessive jump
-host hoping.
+command from the [`Putty`][putty] suite of tools. It is meant to dig ssh 
+tunnels and create socks proxies into various networks to cut down on 
+excessive jump host hoping.
 
+It was conceived in a corporate environment with many dispersed environments which
+were not directly accessible from the desktop. But the resources to be managed be it
+databases, middleware service and web services to name but a few, required graphical
+access to these resources.
+
+PlinkProxy has been successfully used with [FoxyProxy][foxyproxy], [DBeaver][dbeaver], 
+[WinSCP][winscp] and [FreeRDP][freerdp] over [SOCKS5][socks] and [LDAP Admin][ldapadmin], 
+[Apache Directory Studio][directorystudio] over local SSH tunnel.
 
 ## Prerequisites
 * Windows 7 or higher
-* [plink](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html)
-* [pageant](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html)
-* [ssh-keys](https://en.wikipedia.org/wiki/Secure_Shell#Authentication:_OpenSSH_Key_management)
+* [plink][putty-download]
+* [pageant][putty-download]
+* [ssh-keys][ssh-keys]
 
 ## Build Dependencies
-* [AutoIT](https://www.autoitscript.com/)
+* [AutoIT][autoit]
 
 ## Configuration
 
@@ -109,3 +117,15 @@ C:> bin\CompilePlinkProxy.cmd
 ## Todo
 * Make it a tray application.
 * Enable overriding defaults from the Globals section in each of the connections.
+
+[putty]: https://www.chiark.greenend.org.uk/~sgtatham/putty/
+[foxyproxy]: https://www.chiark.greenend.org.uk/~sgtatham/putty/
+[dbeaver]: https://dbeaver.io/
+[winscp]: https://winscp.net/
+[freerdp]: https://cloudbase.it/freerdp-for-windows-nightly-builds/
+[socks]: https://en.wikipedia.org/wiki/SOCKS
+[ldapadmin]: http://www.ldapadmin.org/
+[directorystudio]: https://directory.apache.org/studio/
+[putty-download]: https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html
+[ssh-keys]: https://en.wikipedia.org/wiki/Secure_Shell#Authentication:_OpenSSH_Key_management
+[autoit]: https://www.autoitscript.com/
