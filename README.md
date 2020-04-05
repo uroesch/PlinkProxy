@@ -19,6 +19,10 @@ PlinkProxy has been successfully used with [FoxyProxy][foxyproxy], [DBeaver][dbe
 [WinSCP][winscp] and [FreeRDP][freerdp] over [SOCKS5][socks] and [LDAP Admin][ldapadmin], 
 [Apache Directory Studio][directorystudio] over local SSH tunnel.
 
+## Screenshot
+
+![Plink Proxy Control Window][control-window]
+
 ## Prerequisites
 * Windows 7 or higher
 * [plink][putty-download]
@@ -129,3 +133,5 @@ C:> bin\CompilePlinkProxy.cmd
 [putty-download]: https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html
 [ssh-keys]: https://en.wikipedia.org/wiki/Secure_Shell#Authentication:_OpenSSH_Key_management
 [autoit]: https://www.autoitscript.com/
+
+[control-window]: images/PlinkProxy_v0.0.8-alpha_control-window.png
