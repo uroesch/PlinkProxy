@@ -16,7 +16,6 @@
 #include <Date.au3>
 #include <File.au3>
 
-
 ; --------------------------------------------------------------------------------------------------------------
 ; Globals
 ; --------------------------------------------------------------------------------------------------------------
@@ -177,10 +176,15 @@ EndFunc
 ; --------------------------------------------------------------------------------------------------------------
 
 Func DigTunnel($TunnelId, $Host, $Options)
+    Local $Enabled = FetchEntry($TunnelId, 'enabled')
     Local $PlinkCommand
     Local $HideWindow = @SW_HIDE
     Local $AllOptions = $Globals('plink_options') & ' ' & $Options
     Local $SetupMode  = StringLower(FetchEntry($TunnelId, 'setup'))
+    ; skip non enabled tunnels
+    If StringLower($Enabled) == 'no' Then
+        Return
+    EndIf
     If Not CheckTunnel($TunnelId) Then
         If $Setup And $SetupMode == 'yes' Then
             $AllOptions   = "-A -v " & $Options
@@ -197,28 +201,29 @@ EndFunc
 ; --------------------------------------------------------------------------------------------------------------
 
 Func DigSocksTunnel($TunnelId)
-    Local $Enabled = FetchEntry($TunnelId, 'enabled')
-    Local $Host    = FetchEntry($TunnelId, 'jump_host')
     Local $Options = "-D " & StringRegExpReplace($TunnelId, ".*:", "")
-    If StringLower($Enabled) == 'no' Then
-        Return
-    EndIf
     DigTunnel($TunnelId, $Host, $Options)
 EndFunc
 
 ; --------------------------------------------------------------------------------------------------------------
 
 Func DigLocalTunnel($TunnelId)
-    Local $Enabled = FetchEntry($TunnelId, 'enabled')
     Local $Host    = FetchEntry($TunnelId, 'jump_host')
     Local $Options = _
       "-L " & StringRegExpReplace($TunnelId, ".*:", "") _
       & ':' & FetchEntry($TunnelId, 'target_host') _
       & ':' & FetchEntry($TunnelId, 'target_port')
+    DigTunnel($TunnelId, $Host, $Options)
+ EndFunc
 
-    If StringLower($Enabled) == 'no' Then
-        Return
-    EndIf
+; --------------------------------------------------------------------------------------------------------------
+
+Func DigRemoteTunnel($TunnelId)
+    Local $Host    = FetchEntry($TunnelId, 'jump_host')
+    Local $Options = _
+      "-R " & StringRegExpReplace($TunnelId, ".*:", "") _
+      & ':' & FetchEntry($TunnelId, 'target_host') _
+      & ':' & FetchEntry($TunnelId, 'target_port')
     DigTunnel($TunnelId, $Host, $Options)
 EndFunc
 
@@ -246,6 +251,8 @@ Func DigTunnels()
             DigSocksTunnel($TunnelId)
         Case StringInStr($TunnelId, 'LocalTunnel')
             DigLocalTunnel($TunnelId)
+		 Case StringInStr($TunnelId, 'RemoteTunnel')
+			DigRemoteTunnel($TunnelId)
         Case Else
             MsgBox(1, "Tunnel Type Error", "Tunnel type " & $TunnelId & " not found!")
         EndSelect
@@ -326,12 +333,15 @@ Func _CreateTabButton($Label, $SizePart, $Position, _
     _ColorButton($Button, $ColorForeground, $ColorBackground)
     Return $Button
 EndFunc
+
 ; --------------------------------------------------------------------------------------------------------------
 
 Func _ColorButton($Button, $ColorForeground, $ColorBackground)
     GUICtrlSetBkColor($Button, $ColorBackground)
     GUICtrlSetColor($Button, $ColorForeground)
 EndFunc
+
+; --------------------------------------------------------------------------------------------------------------
 
 Func _CreateColorButton($Label, $HeightFromBottom, _
     $ColorForeground = $DefaultButtonFg, $ColorBackground = $DefaultButtonBg)
@@ -356,6 +366,7 @@ Func _ChangeButtonToActive($Button)
 EndFunc
 
 ; --------------------------------------------------------------------------------------------------------------
+
 Func UpdateSessionLog($Level, $Message)
     Local $LogEntry =  _Now() & " - " & $Level & " - " & $Message
     _ArrayAdd($SessionLog, $LogEntry)
@@ -365,7 +376,8 @@ Func UpdateSessionLog($Level, $Message)
     EndIf
 EndFunc
 
-; -----------------------------------------------------------------------------------------     -------------------
+; --------------------------------------------------------------------------------------------------------------
+
 Func CreateLogView()
     If Not ($Tabs('SessionLog')) Then
         Local $LogContent = _ArrayToString($SessionLog, @CRLF)
@@ -380,6 +392,7 @@ Func CreateLogView()
 EndFunc
 
 ; --------------------------------------------------------------------------------------------------------------
+
 Func ToggleStatus($Button, $Gui)
     Switch GuiCtrlRead($Button)
     Case 'Hide St&atus'
@@ -397,23 +410,25 @@ Func ToggleStatus($Button, $Gui)
 EndFunc
 
 ; --------------------------------------------------------------------------------------------------------------
+
 Func CreateStatusList()
     If Not ($Tabs('ConnStatus')) Then
         Local $ListWidth   = ($GuiWidth * ($FlyoutFactor - 1)) - 5
-	Local $ColumnWidth = ($ListWidth / UBound($StatusHeader)) - Ubound($StatusHeader)
+        Local $ColumnWidth = ($ListWidth / UBound($StatusHeader)) - Ubound($StatusHeader)
         $Tabs('ConnStatus') = GUICtrlCreateListView("", $GuiWidth, 0, $ListWidth, $GuiHeight - 25)
         _GUICtrlListView_SetExtendedListViewStyle( _
-	    $Tabs('ConnStatus'), _
-	    BitOR($LVS_EX_DOUBLEBUFFER, $LVS_EX_FULLROWSELECT, $LVS_EX_SUBITEMIMAGES) _
-	)
-	For $Index = 0 To UBound($StatusHeader) - 1
-	    _GUICtrlListView_InsertColumn($Tabs('ConnStatus'), $Index, $StatusHeader[$Index], $ColumnWidth)
-	Next
+          $Tabs('ConnStatus'), _
+          BitOR($LVS_EX_DOUBLEBUFFER, $LVS_EX_FULLROWSELECT, $LVS_EX_SUBITEMIMAGES) _
+        )
+        For $Index = 0 To UBound($StatusHeader) - 1
+            _GUICtrlListView_InsertColumn($Tabs('ConnStatus'), $Index, $StatusHeader[$Index], $ColumnWidth)
+        Next
         GUISetState(@SW_SHOW)
     EndIf
 EndFunc
 
 ; --------------------------------------------------------------------------------------------------------------
+
 Func UpdateStatusList()
     If Not ($StatusUpdate) Then
         Return
@@ -455,20 +470,19 @@ Func CreateStatusRow($TunnelId, $RowValues)
     If $Position == -1 Then
         ;MsgBox(-1, 'tunnelid', $Tunnelid)
         ; I could not figure out a way to color each row without the following construct. It works but I think
-	; I have to seriously look at DLLStructCreate() to have everything in one Handy location.	
-	Local $Handle = GUICtrlCreateListViewItem(_ArrayToString($RowValues, '|'), $Tabs('ConnStatus'))
-	$TunnelStatus($TunnelId) = $Handle
+        ; I have to seriously look at DLLStructCreate() to have everything in one Handy location.
+        Local $Handle = GUICtrlCreateListViewItem(_ArrayToString($RowValues, '|'), $Tabs('ConnStatus'))
+        $TunnelStatus($TunnelId) = $Handle
         ColorStatusRow($Handle, $RowValues[3])
     Else
         ; Only Update Stautus and PID
         For $Index = 3 To UBound($RowValues) - 1
             _GUICtrlListView_SetItem($Tabs('ConnStatus'), $RowValues[$Index], $Position, $Index)
         Next
-	ColorStatusRow($TunnelStatus($TunnelId), $RowValues[3])
+        ColorStatusRow($TunnelStatus($TunnelId), $RowValues[3])
     EndIf
     _GUICtrlListView_EndUpdate($Tabs('ConnStatus'))
 EndFunc
-
 
 ; --------------------------------------------------------------------------------------------------------------
 

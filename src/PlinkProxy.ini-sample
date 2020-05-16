@@ -86,3 +86,39 @@ setup = yes
 jump_host = admin.dmz.sample.net
 target_host = www.dmz.sample.net
 target_port = 443
+
+; ----------------------------------------------------------------------------------
+; Remote Tunnels
+; ----------------------------------------------------------------------------------
+; Remote Tunnels opened by an SSH enable a connectin from a remote host to a service 
+; runnin on the local machine or the internal networks accessible from the host 
+; running PlinkProxy. The connection program on the far end has to be configured 
+; acoordingly. 
+; Note: Unless the login is made as root user to the destination server, ports 
+; must be greater than 1024. 
+
+[RemoteTunnel:5900]
+; A remote tunnel listening for incoming connections on port 5900 of the the 
+; jump host admin.sample.net loopback interface. A connection is redirected to 
+; the host running PlinkProxy to port 5900 (VNC).
+; Note: Some VNC server must be configured to allow connection vi loopback
+; interface.
+; `plink -R 5900:localhost:5900 joedoe@admin.sample.net`
+name = vnc-connection 
+enabled = yes
+setup = no
+jump_host = admin.sample.net
+target_host = localhost
+target_port  = 5900
+
+[RemoteTunnel:8888]
+; A remote tunnel listening for incoming connections on port 8888 of the the 
+; jump host admin.sample.net loopback interface. A connection is redirected to 
+; the a internal wiki server on port 80 with name wiki.internal.sample.net.
+; `plink -R 8888:wiki.internal.sample.net:80 joedoe@admin.sample.net`
+name = wiki-internal
+enabled = yes
+setup = no
+jump_host = admin.sample.net
+target_host = wiki.internal.sample.net
+target_port  = 80

@@ -97,7 +97,7 @@ target_port  = 636
 ```
 
 * `LocalTunnel:11636` instructs to create a local tunnel port forward on `11636`.
-* `enabled` should the socks tunnel be started or not. Accepts `yes` or `no`.
+* `enabled` should the tunnel be started or not. Accepts `yes` or `no`.
 * `setup` set to `yes` if the jumphost is used for the first time. Accepts `yes` or `no`.
 * `jump_host` defines the termination point of the tunnel.
 * `target_host` forward address or ip when leaving the tunnel.
@@ -105,6 +105,31 @@ target_port  = 636
 
 Command line equivalent of `-L 11636:ldap.dmz.acme.org:636`
 
+### Example RemoteTunnel
+
+```ini
+[RemoteTunnel:5900]
+name = vnc-remote-assistance
+enabled = yes
+setup = no
+jump_host = jumphost.acme.org
+target_host = localhost
+target_port  = 5900
+```
+
+* `RemoteTunnel:5900` instructs to create a remote tunnel listening on port `5900`
+   of the `jump_hosts`'s loopback interface.
+* `enabled` should the tunnel be started or not. Accepts `yes` or `no`.
+* `setup` set to `yes` if the jumphost is used for the first time. Accepts `yes` or `no`.
+* `jump_host` defines the termination point of the tunnel where to listen for incoming traffic.
+* `target_host` forward address or ip when receiving a connection on the tunnel.
+* `target_port` forward port when receiving a connection on the tunnel.
+
+Command line equivalent of `-R 5900:localhost:5900`
+
+**Note:** The global option for remote tunnels which listens on all interfaces is not yet implemented.
+Due internal data representation a remote tunnel must use a unique port number with in the `[RemoteTunnel]`
+namespace.
 
 ### Further Reading
 * [INI Format](https://en.wikipedia.org/wiki/INI_file)
