@@ -76,14 +76,15 @@ target_port  = 636
 ; the only one being executed when the [Setup Proxies] button is pressed.
 ; After setup has been conducted change the value to `no`. The simplified
 ; plink command finally executed looks like the one below. 
-; `plink -proxycmd "plink -nc admin.dmz.sample.net:22 joedoe@admin.sample.net" ^
-;    -L 12443:ldap.dmz.sample.net:443 joedoe@admin.dmz.sample.net`
+; `plink -proxycmd "plink -nc admin.dmz.sample.net:2222 joedoe@admin.sample.net" ^
+;    -L 12443:ldap.dmz.sample.net:443 -P 2222 joedoe@admin.dmz.sample.net`
 ; In the local webbrowser use 'https://localhost:12443/' to connect to the 
 ; web server
 name = dmz-http
 enabled = yes
 setup = yes
 jump_host = admin.dmz.sample.net
+jump_port = 2222
 target_host = www.dmz.sample.net
 target_port = 443
 

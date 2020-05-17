@@ -75,6 +75,7 @@ name = dmz
 enabled = yes
 setup = no
 jump_host = dmz-jumphost.acme.org
+jump_port = 2222
 ```
 
 * `Socks:8881` instructs to create a local Socks proxy on port `8881`.
@@ -82,6 +83,7 @@ jump_host = dmz-jumphost.acme.org
 * `enabled` should the socks proxy be started or not. Accepts `yes` or `no`.
 * `setup` set to `yes` if the jumphost is used for the first time. Accepts `yes` or `no`
 * `jump_host` defines the termination point of the Socks proxy.
+* `jump_port` defines the port of `jump_host'`s connection, if ommited defaults to 22.
 
 
 ### Example LocalTunnel
