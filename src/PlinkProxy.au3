@@ -46,24 +46,22 @@ Global Const $ButtonActiveFg   = $COLOR_BLACK
 ; --------------------------------------------------------------------------------------------------------------
 ; Globals
 ; --------------------------------------------------------------------------------------------------------------
-Global $ConfigDir        = @ScriptDir
-Global $LogDir           = @ScriptDir
-Global $ConfigFile       = $ConfigDir & "\PlinkProxy.ini"
-Global $LogFile          = $LogDir & "\PlinkProxy.log"
-Global $SessionLog       = []
-Global $Debug            = True
-Global $StatusUpdate     = False
-Global $LastTimerUpdate  = TimerInit()
-Global $Setup            = False
-Global $ActiveButton     = Null
-Global $StatusTabParent  = Null
-Global $Tabs             = _AssocArray()
-Global $Globals          = _AssocArray()
-Global $TunnelPids       = _AssocArray()
-Global $StatusTabs       = _AssocArray()
-Global $Buttons          = _AssocArray()
-Global $TunnelStatus     = _AssocArray()
-Global $RefreshInterval  = 5000
+Global $ConfigFile      = @ScriptDir & "\PlinkProxy.ini"
+Global $LogFile         = @ScriptDir & "\PlinkProxy.log"
+Global $SessionLog      = []
+Global $Debug           = True
+Global $StatusUpdate    = False
+Global $LastTimerUpdate = TimerInit()
+Global $Setup           = False
+Global $ActiveButton    = Null
+Global $StatusTabParent = Null
+Global $Tabs            = _AssocArray()
+Global $Globals         = _AssocArray()
+Global $TunnelPids      = _AssocArray()
+Global $StatusTabs      = _AssocArray()
+Global $Buttons         = _AssocArray()
+Global $TunnelStatus    = _AssocArray()
+Global $RefreshInterval = 5000
 
 ; --------------------------------------------------------------------------------------------------------------
 ; Options
@@ -110,8 +108,12 @@ Func Logger($Level, $Message)
 EndFunc
 
 ; --------------------------------------------------------------------------------------------------------------
+Func AssembleOptions()
+   $ConfigFile = 
+EndFunc
+; --------------------------------------------------------------------------------------------------------------
 
-Func CheckConfig()
+Func ConfigExists()
     If Not FileExists($ConfigFile) Then
         Local $Message = "Config file '" & $ConfigFile & "' not found, giving up!"
         Logger('Fatal', $Message)
@@ -633,9 +635,7 @@ EndFunc
 Func DefineCmdLineOptions()
     ; AddOption($Short, $Long, $Message, $Default, $Type, $Validate, $Assign)
     AddOption('h', 'help', 'Display this message and exit', '', 'Help', False, False)
-    AddOption('C', 'config-dir', 'Path to config directory', @ScriptDir, 'Path', True, 'ConfigDir')
     AddOption('c', 'config-file', 'Path to config file', 'PlinkProxy.ini', 'Path', True, 'ConfigFile')
-    AddOption('L', 'log-dir', 'Path to log directory', @ScriptDir, 'Path', True, 'LogDir')
     AddOption('l', 'log-file', 'Path to log file', 'PlinkProxy.log', 'Path', False, 'LogFile')
 EndFunc
 
@@ -644,5 +644,5 @@ EndFunc
 ; --------------------------------------------------------------------------------------------------------------
 DefineCmdLineOptions()
 ParseCommandLine()
-CheckConfig()
+ConfigExists()
 Main()

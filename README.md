@@ -148,15 +148,9 @@ Usage:
         Options:
         -h | --help
                 Display this message and exit
-        -C | --config-dir
-                Path to config directory
-                Default: .
         -c | --config-file
                 Path to config file
                 Default: PlinkProxy.ini
-        -L | --log-dir
-                Path to log directory
-                Default: .
         -l | --log-file
                 Path to log file
                 Default: PlinkProxy.log
