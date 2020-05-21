@@ -109,6 +109,8 @@ Command line equivalent of `-L 11636:ldap.dmz.acme.org:636`
 
 ### Example RemoteTunnel
 
+With version `v0.0.10-alpha` the new tunnel type `RemoteTunnel` was introduced.
+
 ```ini
 [RemoteTunnel:5900]
 name = vnc-remote-assistance
@@ -133,6 +135,34 @@ Command line equivalent of `-R 5900:localhost:5900`
 Due internal data representation a remote tunnel must use a unique port number with in the `[RemoteTunnel]`
 namespace.
 
+### Commandline Options
+
+Since version `v0.0.11-alpha` `PlinkProxy` is able to parse command line options. Below is a list of the
+short and long options available.
+
+```shell
+
+Usage:
+        PlinkProxy.exe <Options>
+
+        Options:
+        -h | --help
+                Display this message and exit
+        -C | --config-dir
+                Path to config directory
+                Default: .
+        -c | --config-file
+                Path to config file
+                Default: PlinkProxy.ini
+        -L | --log-dir
+                Path to log directory
+                Default: .
+        -l | --log-file
+                Path to log file
+                Default: PlinkProxy.log
+
+```
+
 ### Further Reading
 * [INI Format](https://en.wikipedia.org/wiki/INI_file)
 
@@ -150,7 +180,7 @@ C:> bin\CompilePlinkProxy.cmd
 
 ## Todo
 - [ ] Make it a tray application.
-- [x] Enable overriding defaults from the Globals section in each of the connections.
+- [ ] Enable overriding defaults from the Globals section in each of the connections.
 
 [putty]: https://www.chiark.greenend.org.uk/~sgtatham/putty/
 [foxyproxy]: https://www.chiark.greenend.org.uk/~sgtatham/putty/
