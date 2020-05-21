@@ -1,7 +1,13 @@
 ; --------------------------------------------------------------------------------------------------------------
-; Script to quickly connect via socks proxy to various firewalled Windows hosts
+; Author: Urs Roesch <github@bun.ch>
+; Description: Script to quickly connect via socks proxy or port forwarding to various hosts behind firewalls.
+; --------------------------------------------------------------------------------------------------------------
+
+; --------------------------------------------------------------------------------------------------------------
+; Includes
 ; --------------------------------------------------------------------------------------------------------------
 #include <Version.au3>
+#include <CommandLineParser.au3>
 #include <TabConstants.au3>
 #include <GUIConstantsEx.au3>
 #include <ColorConstants.au3>
@@ -17,37 +23,47 @@
 #include <File.au3>
 
 ; --------------------------------------------------------------------------------------------------------------
+; Global Constants
+; --------------------------------------------------------------------------------------------------------------
+Global Const $GuiWidth        = 200
+Global Const $GuiHeight       = 300
+Global Const $FlyoutFactor    = 4
+Global Const $AppTitle        = 'PlinkProxy Control'
+Global Const $AppVersion      = 'Version ' & StringReplace($VERSION, "-", " ")
+Global Const $StatusHeader[5] = ["Name", "Type", "Port", "Status", "PID"]
+
+; --------------------------------------------------------------------------------------------------------------
+; Global Constants (Colors)
+; --------------------------------------------------------------------------------------------------------------
+Global Const $CanvasColor      = 0x333333
+Global Const $TextColor        = 0xcccccc
+Global Const $DefaultButtonBg  = $COLOR_PURPLE
+Global Const $DefaultButtonFg  = $COLOR_WHITE
+Global Const $ButtonExitBg     = 0xFF8800
+Global Const $ButtonActiveBg   = 0x66DD00
+Global Const $ButtonActiveFg   = $COLOR_BLACK
+
+; --------------------------------------------------------------------------------------------------------------
 ; Globals
 ; --------------------------------------------------------------------------------------------------------------
-Global $GuiWidth         = 200
-Global $GuiHeight        = 300
-Global $ConfigFile       = @ScriptDir & "\PlinkProxy.ini"
-Global $LogFile          = @ScriptDir & "\PlinkProxy.log"
+Global $ConfigDir        = @ScriptDir
+Global $LogDir           = @ScriptDir
+Global $ConfigFile       = $ConfigDir & "\PlinkProxy.ini"
+Global $LogFile          = $LogDir & "\PlinkProxy.log"
 Global $SessionLog       = []
-Global $Tabs             = _AssocArray()
+Global $Debug            = True
+Global $StatusUpdate     = False
+Global $LastTimerUpdate  = TimerInit()
 Global $Setup            = False
+Global $ActiveButton     = Null
+Global $StatusTabParent  = Null
+Global $Tabs             = _AssocArray()
 Global $Globals          = _AssocArray()
 Global $TunnelPids       = _AssocArray()
 Global $StatusTabs       = _AssocArray()
 Global $Buttons          = _AssocArray()
-Global $AppTitle         = 'PlinkProxy Control'
-Global $AppVersion       = 'Version ' & StringReplace($VERSION, "-", " ")
-Global $CanvasColor      = 0x333333
-Global $TextColor        = 0xcccccc
-Global $DefaultButtonBg  = $COLOR_PURPLE
-Global $DefaultButtonFg  = $COLOR_WHITE
-Global $ButtonExitBg     = 0xFF8800
-Global $ButtonActiveBg   = 0x66DD00
-Global $ButtonActiveFg   = $COLOR_BLACK
-Global $ActiveButton     = Null
-Global $Debug            = True
-Global $RefreshInterval  = 5000
-Global $StatusUpdate     = False
 Global $TunnelStatus     = _AssocArray()
-Global $LastTimerUpdate  = TimerInit()
-Global $StatusTabParent  = Null
-Global $StatusHeader[5]  = ["Name", "Type", "Port", "Status", "PID"]
-Global $FlyoutFactor     = 4
+Global $RefreshInterval  = 5000
 
 ; --------------------------------------------------------------------------------------------------------------
 ; Options
@@ -91,6 +107,17 @@ Func Logger($Level, $Message)
     Local $LogMessage = @ScriptName & '[' & @ComputerName & '] - ' & $Level & ' - ' & $Message
     UpdateSessionLog($Level, $Message)
     _FileWriteLog($LogFile, $LogMessage)
+EndFunc
+
+; --------------------------------------------------------------------------------------------------------------
+
+Func CheckConfig()
+    If Not FileExists($ConfigFile) Then
+        Local $Message = "Config file '" & $ConfigFile & "' not found, giving up!"
+        Logger('Fatal', $Message)
+        MsgBox(-1, 'Fatal Error', $Message)
+        Exit 127
+    EndIf
 EndFunc
 
 ; --------------------------------------------------------------------------------------------------------------
@@ -180,8 +207,8 @@ Func AssembleProxyCommand($JumpHost, $JumpPort = 22)
     If $JumpHost <> $Globals('first_hop') Then
         $ProxyCommand = _
           ' -proxycmd "plink -nc ' _
-	  &  $JumpHost & ':' & $JumpPort & ' ' _
-	  & $Globals('login') & '@' & $Globals('first_hop') & '" '
+      &  $JumpHost & ':' & $JumpPort & ' ' _
+      & $Globals('login') & '@' & $Globals('first_hop') & '" '
     EndIf
     Return $ProxyCommand
 EndFunc
@@ -281,8 +308,8 @@ Func DigTunnels()
             DigSocksTunnel($TunnelId)
         Case StringInStr($TunnelId, 'LocalTunnel')
             DigLocalTunnel($TunnelId)
-		 Case StringInStr($TunnelId, 'RemoteTunnel')
-			DigRemoteTunnel($TunnelId)
+         Case StringInStr($TunnelId, 'RemoteTunnel')
+            DigRemoteTunnel($TunnelId)
         Case Else
             MsgBox(1, "Tunnel Type Error", "Tunnel type " & $TunnelId & " not found!")
         EndSelect
@@ -602,6 +629,20 @@ Func StartProxyGui()
 EndFunc
 
 ; --------------------------------------------------------------------------------------------------------------
+
+Func DefineCmdLineOptions()
+    ; AddOption($Short, $Long, $Message, $Default, $Type, $Validate, $Assign)
+    AddOption('h', 'help', 'Display this message and exit', '', 'Help', False, False)
+    AddOption('C', 'config-dir', 'Path to config directory', @ScriptDir, 'Path', True, 'ConfigDir')
+    AddOption('c', 'config-file', 'Path to config file', 'PlinkProxy.ini', 'Path', True, 'ConfigFile')
+    AddOption('L', 'log-dir', 'Path to log directory', @ScriptDir, 'Path', True, 'LogDir')
+    AddOption('l', 'log-file', 'Path to log file', 'PlinkProxy.log', 'Path', False, 'LogFile')
+EndFunc
+
+; --------------------------------------------------------------------------------------------------------------
 ; Main
 ; --------------------------------------------------------------------------------------------------------------
+DefineCmdLineOptions()
+ParseCommandLine()
+CheckConfig()
 Main()
