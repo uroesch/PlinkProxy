@@ -53,7 +53,7 @@ Func ParseCommandLine()
     For $Index = 1 To $CmdLine[0]
         EvaluateOptions($Index, $Errors)
     Next
-    If UBound($Errors) > 0 Then
+    If $Errors[0] > 0 Then
         Usage(0, "Unknown options: '" & _ArrayToString($Errors, ", ") & "'")
     EndIf
 EndFunc
