@@ -67,7 +67,13 @@ Global $RefreshInterval = 5000
 ; Options
 ; --------------------------------------------------------------------------------------------------------------
 Opt("GUIResizeMode", $GUI_DOCKALL)
+Opt("ExpandEnvStrings", 1)
 Opt("MustDeclareVars", 1)
+
+; --------------------------------------------------------------------------------------------------------------
+; Define Autoit Environment Variables
+; --------------------------------------------------------------------------------------------------------------
+EnvSet('ScriptDir', @ScriptDir)
 
 ; --------------------------------------------------------------------------------------------------------------
 ; Functions
@@ -75,12 +81,12 @@ Opt("MustDeclareVars", 1)
 
 ; Return a default value for a field default is 'n/a'
 Func DefaultValues($Field)
-    Select
-    Case $Field = 'jump_port'
+    Switch $Field
+    Case 'jump_port'
       Return 22
     Case Else
       Return 'n/a'
-    EndSelect
+    EndSwitch
 EndFunc
 
 ; --------------------------------------------------------------------------------------------------------------
@@ -160,25 +166,8 @@ EndFunc
 
 ; --------------------------------------------------------------------------------------------------------------
 
- Func EvaluatePath($Path)
-    Local $ModifiedPath
-    If Not StringInStr($Path, '%') Then
-       Return $Path
-    EndIf
-    Local $Variables = StringRegExp($Path, "%.[^%]*%", 1)
-    For $Index = 0 To $Variables[0]
-        Local $EnvName  = $Variables[$Index]
-        Local $EnvValue = EnvGet(StringReplace($EnvName, "%", ""))
-        $ModifiedPath   = StringReplace($Path, $EnvName, $EnvValue)
-    Next
-    Logger('Debug', "Replacing '" & $Path & "' with '" & $ModifiedPath & "'")
-    Return $ModifiedPath
-EndFunc
-
-; --------------------------------------------------------------------------------------------------------------
-
 Func UpdatePath()
-    Local $Path    = EvaluatePath($Globals('path'))
+    Local $Path    = $Globals('path')
     Local $EnvPath = EnvGet('PATH')
     EnvSet('PATH', $EnvPath & ';' & $Path)
     EnvUpdate()
@@ -336,18 +325,8 @@ EndFunc
 
 ; --------------------------------------------------------------------------------------------------------------
 
-Func SshKeysDir()
-    If IsDeclared('SshKeysDir') Then
-        Return $SshKeysDir
-    EndIf
-    Global $SshKeysDir = EvaluatePath($Globals('ssh_keys_dir'))
-    Return $SshKeysDir
-EndFunc
-
-; --------------------------------------------------------------------------------------------------------------
-
 Func FindSshKeys()
-    Local $SshKeys = _FileListToArray(SshKeysDir(), '*ppk')
+    Local $SshKeys = _FileListToArray($Globals('ssh_keys_dir'), '*ppk')
     If Not Ubound($SshKeys) Then
         Return ""
     EndIf
@@ -359,7 +338,7 @@ EndFunc
 Func StartPageant()
     Local $Pageant = 'Pageant.exe'
     If Not ProcessExists($Pageant) Then
-        ShellExecute($Pageant, FindSshKeys(), SshKeysDir(), "", @SW_HIDE)
+        ShellExecute($Pageant, FindSshKeys(), $Globals('ssh_keys_dir'), "", @SW_HIDE)
         Logger('Info', 'Starting peageant to load ssh keys')
     EndIf
 EndFunc
