@@ -67,6 +67,11 @@ plink_options = -N -A -v -batch
   final destination.
 * `plink_options` are the global options used to spawn the connection.
 
+Since version `v0.0.14-alpha` a special environmental variable called `%ScriptDir%`
+has been added. It expands to the directory where the `PlinkProxy.exe` is run from.
+This is a handy shortcut for the `path` defintion should `plink.exe` and 
+`pageant.exe` be located in the same directory as `PlinkProxy.exe`.
+
 ### Example Socks
 
 ```ini
