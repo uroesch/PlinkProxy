@@ -32,6 +32,30 @@ PlinkProxy has been successfully used with [FoxyProxy][foxyproxy], [DBeaver][dbe
 ## Build Dependencies
 * [AutoIT][autoit]
 
+## Installation
+
+### Download
+The latest release can be obtained from the
+[github releases page](https://github.com/uroesch/PlinkProxy/releases).
+It is provided in the form of a ZIP file or a OneClick installer.
+
+### ZIP File
+`PlinkProxy` was written with portability in mind. The ZIP file expands into
+a directory called `PlinkProxy` which contains the `PlinkProxy.exe` file and
+a sample configuration file (`PlinkProxy.ini-sample`). Before running the
+binary copy the `PlinkProxy.ini-sample` file to `PlinkProxy.ini` and modify
+to match your environment. Then run `PlinkProxy.exe`.
+
+### OneClick Installer
+The provided installer is as minimial as it possibly can get. The installtion
+copies files to the '%AppData%\PlinkProxy` directory and creates a start menu
+item. To start the application navigate to the `%AppData%\PlinkProxy`
+directory and rename the `PlinkProxy.ini-sample` file to `PlinkProxy.ini`.
+Change the freshly copied configuration file to match your environment.
+Go to the start menu and navigate to the PlinkProxy entry and start the
+application.
+
+
 ## Configuration
 
 ### Introduction
