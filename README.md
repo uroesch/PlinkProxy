@@ -39,6 +39,8 @@ PlinkProxy has been successfully used with [FoxyProxy][foxyproxy], [DBeaver][dbe
 The latest release can be obtained from the
 [github releases page](https://github.com/uroesch/PlinkProxy/releases).
 It is provided in the form of a ZIP file or a OneClick installer.
+**Important note:** `PlinkProxy` depends on `pageant` and `plink` which
+are not included in the ZIP and OneClick installer.
 
 ### ZIP File
 `PlinkProxy` was written with portability in mind. The ZIP file expands into
@@ -55,6 +57,12 @@ directory and rename the `PlinkProxy.ini-sample` file to `PlinkProxy.ini`.
 Change the freshly copied configuration file to match your environment.
 Go to the start menu and navigate to the PlinkProxy entry and start the
 application.
+
+### PortableApp
+If you want to run PlinkProxy from within the 
+[PortableApps.com platform](https://portableapps.com/) you can do so by
+downloading it [here](https://github.com/uroesch/PlinkProxyPortable/releases).
+**Note:** Newer versions to bundle with `pageant` and `plink`.
 
 
 ## Configuration
