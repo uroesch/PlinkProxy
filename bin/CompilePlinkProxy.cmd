@@ -9,6 +9,7 @@ set PATH=%PATH%;%SCRIPT_DIR%\..\install\Aut2Exe
 set BASE_DIR=%SCRIPT_DIR%..\
 set SOURCE_DIR=%BASE_DIR%src
 set RELEASE_DIR=%BASE_DIR%releases
+set INSTALLER_DIR=%BASE_DIR%installer
 set VERSION_FILE=%SOURCE_DIR%\Version.au3
 set APPNAME=PlinkProxy
 set DELIMITER=.........................................
@@ -21,6 +22,7 @@ set RELEASE_PATH
 call :EXTRACT_VERSION
 call :COMPILE
 call :CREATE_RELEASE
+call :CREATE_INSTALLER
 call :ZIP_RELEASE
 exit /b
 
@@ -66,13 +68,26 @@ goto :EOF
 goto :EOF
 
 :: ----------------------------------------------------------------------------
+:CREATE_INSTALLER
+  echo --- Creating Installer for %VERSION% ---
+  where makensis.exe 1>nul 2>nul
+  IF %ERRORLEVEL% NEQ 0 (
+    echo Could not find makensis.exe -- Not creating installer.
+    echo %DELIMITER%
+    goto :EOF
+  )
+  makensis /DVERSION=%VERSION% %INSTALLER_DIR%\installer.nsi
+  echo %DELIMITER%
+goto :EOF
+
+:: ----------------------------------------------------------------------------
 :ZIP_RELEASE
   echo --- Creating zip file for release %VERSION% ---
   where 7z.exe 1>nul 2>nul
   IF %ERRORLEVEL% NEQ 0 (
     echo Could not find 7z.exe -- Not creating release zip.
     echo %DELIMITER%
-    goto :eof
+    goto :EOF
   )
   7z.exe a -r "%RELEASE_PATH%.zip" "%RELEASE_PATH%" 1>nul
   echo "Created zip file %RELEASE_PATH%.zip
