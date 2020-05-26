@@ -51,7 +51,7 @@ to match your environment. Then run `PlinkProxy.exe`.
 
 ### OneClick Installer
 The provided installer is as minimial as it possibly can get. The installtion
-copies files to the '%AppData%\PlinkProxy` directory and creates a start menu
+copies files to the `%AppData%\PlinkProxy` directory and creates a start menu
 item. To start the application navigate to the `%AppData%\PlinkProxy`
 directory and rename the `PlinkProxy.ini-sample` file to `PlinkProxy.ini`.
 Change the freshly copied configuration file to match your environment.
