@@ -2,7 +2,11 @@
 # Overridable definitions
 # -----------------------------------------------------------------------------
 !ifndef VERSION
-  !define VERSION v1.0
+  !define VERSION v1.0.0
+!endif
+
+!ifndef PRODUCT_VERSION
+  !define PRODUCT_VERSON 1.0.0.0
 !endif
 
 !ifndef NAME
@@ -12,6 +16,8 @@
 !ifndef RELEASE_DIR
   !define RELEASE_DIR ..\releases
 !endif
+
+
 
 # Single user/"Just me" installer
 RequestExecutionLevel User 
@@ -28,6 +34,16 @@ Icon ../src/PlinkProxy.ico
 # set title of installer window
 Caption "${NAME} OneClick Installer"
 UninstallCaption "${NAME} OneClick Uninstaller"
+VIProductVersion ${PRODUCT_VERSION}
+VIAddVersionKey ProductName "${NAME} Installer" 
+VIAddVersionKey Comments "${NAME} Installer" 
+VIAddVersionKey CompanyName "Urs Roesch" 
+VIAddVersionKey LegalCopyright "2019-2020 Urs Roesch"
+VIAddVersionKey FileDesctiption "${NAME} Installer"
+VIAddVersionKey FileVersion "${PRODUCT_VERSION}"
+VIAddVersionKey InternalName "${Name} Installer"
+VIAddVersionKey OriginalFilename "${Name}_${Version}_Installer.exe"
+
 
 # -----------------------------------------------------------------------------
 # Create Start Menu Entries 

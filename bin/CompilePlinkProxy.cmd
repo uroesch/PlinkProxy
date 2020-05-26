@@ -49,7 +49,6 @@ goto :EOF
 :COMPILE
   echo --- Compile %APPNAME% version %VERSION% ---
   set BINARY="%SCRIPT_DIR%\%APPNAME%_%VERSION%.exe"
-  @echo on
   aut2exe ^
     /in "%SOURCE_DIR%\%APPNAME%.au3" ^
     /out "%BINARY%" ^
@@ -58,6 +57,7 @@ goto :EOF
     /productname "%APPNAME%" ^
     /productversion "%VERSION:~1%" ^
     /fileversion "%FILE_VERSION%" ^
+    /legalcopyright "2019-2020 Urs Roesch" ^
     /filedescription "Windows frontend for digging SSH tunnels"
   echo Saved to %BINARY%
   echo %DELIMITER%
@@ -84,7 +84,10 @@ goto :EOF
     echo %DELIMITER%
     goto :EOF
   )
-  makensis /DVERSION=%VERSION% %INSTALLER_DIR%\installer.nsi
+  makensis ^
+    /DVERSION=%VERSION% ^
+    /DPRODUCT_VERSION=%FILE_VERSION% ^
+    %INSTALLER_DIR%\installer.nsi
   echo %DELIMITER%
 goto :EOF
 
