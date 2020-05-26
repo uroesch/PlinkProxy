@@ -38,6 +38,8 @@ exit /b
   :: remove spaces and quotes
   set VERSION=%VERSION: =%
   set VERSION=%VERSION:"=%
+  set SUFFIX=%VERSION:*-=%
+  CALL set FILE_VERSION=%%VERSION:-%SUFFIX%=%%.0
   set VERSION=v%VERSION%
   echo Release number is %VERSION%
   echo %DELIMITER%
@@ -47,10 +49,16 @@ goto :EOF
 :COMPILE
   echo --- Compile %APPNAME% version %VERSION% ---
   set BINARY="%SCRIPT_DIR%\%APPNAME%_%VERSION%.exe"
+  @echo on
   aut2exe ^
     /in "%SOURCE_DIR%\%APPNAME%.au3" ^
     /out "%BINARY%" ^
-    /icon "%SOURCE_DIR%\%APPNAME%.ico"
+    /icon "%SOURCE_DIR%\%APPNAME%.ico" ^
+    /companyname "Urs Roesch" ^
+    /productname "%APPNAME%" ^
+    /productversion "%VERSION:~1%" ^
+    /fileversion "%FILE_VERSION%" ^
+    /filedescription "Windows frontend for digging SSH tunnels"
   echo Saved to %BINARY%
   echo %DELIMITER%
 goto :EOF
