@@ -58,9 +58,9 @@ Global $StatusTabParent = Null
 Global $Tabs            = _AssocArray()
 Global $Globals         = _AssocArray()
 Global $TunnelPids      = _AssocArray()
+Global $TunnelStatus    = _AssocArray()
 Global $StatusTabs      = _AssocArray()
 Global $Buttons         = _AssocArray()
-Global $TunnelStatus    = _AssocArray()
 Global $RefreshInterval = 5000
 
 ; --------------------------------------------------------------------------------------------------------------
@@ -83,9 +83,9 @@ EnvSet('ScriptDir', @ScriptDir)
 Func DefaultValues($Field)
     Switch $Field
     Case 'jump_port'
-      Return 22
+        Return 22
     Case Else
-      Return 'n/a'
+        Return 'n/a'
     EndSwitch
 EndFunc
 
@@ -98,14 +98,14 @@ Func _AssocArray()
     EndIf
     $AssocArray.CompareMode = 1
     Return $AssocArray
- EndFunc
+EndFunc
 
 ; --------------------------------------------------------------------------------------------------------------
 
 Func Logger($Level, $Message)
     Switch StringLower($Level)
     Case 'debug' And Not $Debug
-    Return
+        Return
     EndSwitch
     $Level = StringUpper($Level)
     Local $LogMessage = @ScriptName & '[' & @ComputerName & '] - ' & $Level & ' - ' & $Message
@@ -113,10 +113,6 @@ Func Logger($Level, $Message)
     _FileWriteLog($LogFile, $LogMessage)
 EndFunc
 
-; --------------------------------------------------------------------------------------------------------------
-Func AssembleOptions()
-   $ConfigFile = 
-EndFunc
 ; --------------------------------------------------------------------------------------------------------------
 
 Func ConfigExists()
@@ -159,7 +155,7 @@ EndFunc
 
 Func FetchEntry($Section, $Field, $Prefix = "")
     If $Prefix <> "" Then
-      $Section = $Prefix & ":" & $Section
+        $Section = $Prefix & ":" & $Section
     EndIf
     Return IniRead($ConfigFile, $Section, $Field, DefaultValues($Field))
 EndFunc
@@ -184,7 +180,7 @@ EndFunc
 
 Func AssembleHost($Host)
     If StringInStr($Host, ':') Then
-         Return $Host
+        Return $Host
     EndIf
     Return $Host & ':22'
 EndFunc
@@ -198,8 +194,8 @@ Func AssembleProxyCommand($JumpHost, $JumpPort = 22)
     If $JumpHost <> $Globals('first_hop') Then
         $ProxyCommand = _
           ' -proxycmd "plink -nc ' _
-      &  $JumpHost & ':' & $JumpPort & ' ' _
-      & $Globals('login') & '@' & $Globals('first_hop') & '" '
+          & $JumpHost & ':' & $JumpPort & ' ' _
+          & $Globals('login') & '@' & $Globals('first_hop') & '" '
     EndIf
     Return $ProxyCommand
 EndFunc
