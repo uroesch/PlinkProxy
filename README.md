@@ -58,6 +58,10 @@ Change the freshly copied configuration file to match your environment.
 Go to the start menu and navigate to the PlinkProxy entry and start the
 application.
 
+**Note:** Since the installer and the included binaries are not not signed it
+is very likely that it will be flagged as virus or malware. But don't dispair
+there is work underway to mitigate the issue.
+
 ### PortableApp
 If you want to run PlinkProxy from within the 
 [PortableApps.com platform](https://portableapps.com/) you can do so by
