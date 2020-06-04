@@ -1,6 +1,7 @@
 [![Build](https://github.com/uroesch/PlinkProxy/workflows/build-release/badge.svg)](https://github.com/uroesch/PlinkProxy/actions?query=workflow%3Abuild-release)
 [![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/uroesch/PlinkProxy?include_prereleases)](https://github.com/uroesch/PlinkProxy/releases)
 [![Runs on](https://img.shields.io/badge/runs%20on-Win64%20%26%20Win32-blue)](#runtime-dependencies)
+![GitHub All Releases](https://img.shields.io/github/downloads/uroesch/PlinkProxy/total?style=flat)
 
 # PlinkProxy
 
