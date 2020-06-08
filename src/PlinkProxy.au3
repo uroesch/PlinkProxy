@@ -31,6 +31,7 @@ Global Const $FlyoutFactor    = 4
 Global Const $AppTitle        = 'PlinkProxy Control'
 Global Const $AppVersion      = 'Version ' & StringReplace($VERSION, "-", " ")
 Global Const $StatusHeader[5] = ["Name", "Type", "Port", "Status", "PID"]
+Global Const $HostKeyRegExp   = '^([A-Fa-f0-9]{2}:){15}[A-Fa-f0-9]{2}$'
 
 ; --------------------------------------------------------------------------------------------------------------
 ; Global Constants (Colors)
@@ -82,6 +83,10 @@ EnvSet('ScriptDir', @ScriptDir)
 ; Return a default value for a field default is 'n/a'
 Func DefaultValues($Field)
     Switch $Field
+    Case 'jump_login'
+        Return $Globals('login')
+    Case 'jump_hostkey'
+        Return ''
     Case 'jump_port'
         Return 22
     Case Else
@@ -187,6 +192,16 @@ EndFunc
 
 ; --------------------------------------------------------------------------------------------------------------
 
+Func HostKey($FingerPrint) 
+    Local $HostKey = ""
+    If StringRegExp($FingerPrint, $HostKeyRegExp) Then
+      $HostKey = '-hostkey ' & $FingerPrint
+    EndIf 
+    Return $HostKey
+EndFunc
+
+; --------------------------------------------------------------------------------------------------------------
+
 Func AssembleProxyCommand($JumpHost, $JumpPort = 22)
     ; Only return proxy command if jump host is not the first hop
     ; to prevent loops
@@ -195,6 +210,7 @@ Func AssembleProxyCommand($JumpHost, $JumpPort = 22)
         $ProxyCommand = _
           ' -proxycmd "plink -nc ' _
           & $JumpHost & ':' & $JumpPort & ' ' _
+          & HostKey($Globals('first_hop_hostkey')) & ' ' _
           & $Globals('login') & '@' & $Globals('first_hop') & '" '
     EndIf
     Return $ProxyCommand
@@ -202,18 +218,23 @@ EndFunc
 
 ; --------------------------------------------------------------------------------------------------------------
 
-Func AssemblePlinkOptions($JumpHost, $JumpPort, $Options)
+Func AssemblePlinkOptions($TunnelId, $Options)
+    Local $JumpHost    = FetchEntry($TunnelId, 'jump_host')
+    Local $JumpHostKey = FetchEntry($TunnelId, 'jump_hostkey')
+    Local $JumpPort    = FetchEntry($TunnelId, 'jump_port')
+    Local $Login       = FetchEntry($TunnelId, 'jump_login')
     ; If the connectin is to forwarded port from another incoming ssh connection on the first hop
     ; then we need to set to connect host to the same value as the first_hop. Otherwise the connection
     ; is attempted locally.
     Local $ConnectHost = $JumpHost
     If StringRegExp($Jumphost, "^(localhost\.?|127\.0\.0\.1|::1)$") Then
-       $ConnectHost = $Globals('first_hop')
+        $ConnectHost = $Globals('first_hop')
     EndIf
     Local $PlinkOptions = _
       $Options & " " _
       & AssembleProxyCommand($JumpHost, $JumpPort) _
-      & $Globals('login') & '@' & $ConnectHost
+      & HostKey($JumpHostKey) & " " _
+      & $Login & '@' & $ConnectHost
     Return $PlinkOptions
 EndFunc
 
@@ -221,12 +242,11 @@ EndFunc
 
 Func DigTunnel($TunnelId, $Options)
     Local $PlinkCommand
-    Local $JumpHost   = FetchEntry($TunnelId, 'jump_host')
-    Local $JumpPort   = FetchEntry($TunnelId, 'jump_port')
-    Local $Enabled    = FetchEntry($TunnelId, 'enabled')
-    Local $HideWindow = @SW_HIDE
-    Local $AllOptions = $Globals('plink_options') & ' -P ' & $JumpPort & ' ' & $Options
-    Local $SetupMode  = StringLower(FetchEntry($TunnelId, 'setup'))
+    Local $Enabled     = FetchEntry($TunnelId, 'enabled')
+    Local $JumpPort    = FetchEntry($TunnelId, 'jump_port')
+    Local $HideWindow  = @SW_HIDE
+    Local $AllOptions  = $Globals('plink_options') & ' -P ' & $JumpPort & ' ' & $Options
+    Local $SetupMode   = StringLower(FetchEntry($TunnelId, 'setup'))
     ; skip non enabled tunnels
     If StringLower($Enabled) == 'no' Then
         Return
@@ -235,10 +255,10 @@ Func DigTunnel($TunnelId, $Options)
         If $Setup And $SetupMode == 'yes' Then
             $AllOptions   = '-A -v -P ' & $JumpPort & ' ' & $Options
             $HideWindow   = 1
-            $PlinkCommand = 'plink ' & AssemblePlinkOptions($JumpHost, $JumpPort, $AllOptions)
+            $PlinkCommand = 'plink ' & AssemblePlinkOptions($TunnelId, $AllOptions)
             RunWait($PlinkCommand, "", $HideWindow)
         ElseIf $SetupMode <> 'yes' Then
-            $PlinkCommand = 'plink ' & AssemblePlinkOptions($JumpHost, $JumpPort, $AllOptions)
+            $PlinkCommand = 'plink ' & AssemblePlinkOptions($TunnelId, $AllOptions)
             $TunnelPids($TunnelId) = Run($PlinkCommand, "", $HideWindow)
         EndIf
         Logger('Info', "Opening tunnel '" & $TunnelId & "' with command '" & $PlinkCommand & "'")

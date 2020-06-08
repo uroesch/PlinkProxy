@@ -9,13 +9,14 @@
 
 [Globals]
 ; Login name of the user opening the connection.
-login         = joedoe
+login = joedoe
 ; Path to the putty binaries. Both `plink.exe` and `pageant.exe` must be present.
-path          = %UserProfile%\PortableApps\PuttyPortable\App\putty
+path  = %UserProfile%\PortableApps\PuttyPortable\App\putty
 ; Path to the ssh private keys in `.ppk` format.
-ssh_keys_dir  = %UserProfile%\PortableApps\PuttyPortable\Data\ssh-keys
+ssh_keys_dir = %UserProfile%\PortableApps\PuttyPortable\Data\ssh-keys
 ; Name of the jump host used for all other connections.
-first_hop     = admin.sample.net
+first_hop = admin.sample.net
+first_hop_hostkey = 01:23:45:67:89:ab:cd:ef:01:23:45:67:89:ab:cd:ef
 ; Default plink options used when establishing a connection.
 plink_options = -N -A -v -batch
 
@@ -33,21 +34,26 @@ plink_options = -N -A -v -batch
 ; This is a single hop connection. Since the first_hop 
 ; in the [Globals] section and the jump_host match 
 ; a simple connection will be used for `plink`, e.g:
-; `plink -D 8880 joedoe@admin.sample.net` 
+; `plink -D 8880 ^
+;    -hostkey 01:23:45:67:89:ab:cd:ef:01:23:45:67:89:ab:cd:ef ^
+;    joedoe@admin.sample.net` 
 name = admin-zone
 enabled = yes
 setup = no
 jump_host = admin.sample.net
+jump_hostkey = 01:23:45:67:89:ab:cd:ef:01:23:45:67:89:ab:cd:ef
 
 [Socks:8881]
 ; This is a tunnel where the jump_host is acting as a 
 ; a second hop. The simplified plink command looks liek 
 ; `plink -proxycmd "plink -nc admin.dmz.sample.net:22 joedoe@admin.sample.net" ^
-;    -D 8881 joedoe@admin.dmz.sample.net`
+;    -D 8881 -hostkey 01:23:45:67:89:ab:cd:ef:01:23:45:67:89:ab:cd:ef ^
+;   joedoe@admin.dmz.sample.net`
 name = dmz
 enabled = no
 setup = no
 jump_host = admin.dmz.sample.net
+jump_hostkey = 01:23:45:67:89:ab:cd:ef:01:23:45:67:89:ab:cd:ef
 
 ; ----------------------------------------------------------------------------------
 ; Local Tunnels
@@ -60,13 +66,16 @@ jump_host = admin.dmz.sample.net
 [LocalTunnel:11636]
 ; A local tunnel with a forward to a LDAP server on port 636 (ldaps)
 ; Note this tunnel is disabled `enabled = no`
-; `plink -L 11636:ldap.sample.net:636 joedoe@admin.sample.net`
+; `plink -L 11636:ldap.sample.net:636 ^
+;    -hostkey 01:23:45:67:89:ab:cd:ef:01:23:45:67:89:ab:cd:ef ^
+;    joedoe@admin.sample.net`
 ; In the LDAP Tool of choice set the server and port to `localhost:11636`
 ; when setting up the connection.
 name = admin-ldap
 enabled = no
 setup = no
 jump_host = admin.sample.net
+jump_hostkey = 01:23:45:67:89:ab:cd:ef:01:23:45:67:89:ab:cd:ef
 target_host = ldap.sample.net
 target_port  = 636
 
@@ -77,14 +86,18 @@ target_port  = 636
 ; After setup has been conducted change the value to `no`. The simplified
 ; plink command finally executed looks like the one below. 
 ; `plink -proxycmd "plink -nc admin.dmz.sample.net:2222 joedoe@admin.sample.net" ^
-;    -L 12443:ldap.dmz.sample.net:443 -P 2222 joedoe@admin.dmz.sample.net`
+;    -L 12443:ldap.dmz.sample.net:443 -P 2222 ^
+;    -hostkey 01:23:45:67:89:ab:cd:ef:01:23:45:67:89:ab:cd:ef ^
+;    jamesbond@admin.dmz.sample.net`
 ; In the local webbrowser use 'https://localhost:12443/' to connect to the 
 ; web server
 name = dmz-http
 enabled = yes
 setup = yes
+jump_login = jamesbond
 jump_host = admin.dmz.sample.net
 jump_port = 2222
+jump_hostkey = 01:23:45:67:89:ab:cd:ef:01:23:45:67:89:ab:cd:ef
 target_host = www.dmz.sample.net
 target_port = 443
 
@@ -104,11 +117,14 @@ target_port = 443
 ; the host running PlinkProxy to port 5900 (VNC).
 ; Note: Some VNC server must be configured to allow connection vi loopback
 ; interface.
-; `plink -R 5900:localhost:5900 joedoe@admin.sample.net`
+; `plink -R 5900:localhost:5900 ^
+;    -hostkey 01:23:45:67:89:ab:cd:ef:01:23:45:67:89:ab:cd:ef ^
+;    joedoe@admin.sample.net`
 name = vnc-connection 
 enabled = yes
 setup = no
 jump_host = admin.sample.net
+jump_hostkey = 01:23:45:67:89:ab:cd:ef:01:23:45:67:89:ab:cd:ef
 target_host = localhost
 target_port  = 5900
 
@@ -116,10 +132,14 @@ target_port  = 5900
 ; A remote tunnel listening for incoming connections on port 8888 of the the 
 ; jump host admin.sample.net loopback interface. A connection is redirected to 
 ; the a internal wiki server on port 80 with name wiki.internal.sample.net.
-; `plink -R 8888:wiki.internal.sample.net:80 joedoe@admin.sample.net`
+; `plink -R 8888:wiki.internal.sample.net:80 ^
+;    -hostkey 01:23:45:67:89:ab:cd:ef:01:23:45:67:89:ab:cd:ef ^
+;    wiki@admin.sample.net`
 name = wiki-internal
 enabled = yes
 setup = no
+jump_login = wiki
 jump_host = admin.sample.net
+jump_hostkey = 01:23:45:67:89:ab:cd:ef:01:23:45:67:89:ab:cd:ef
 target_host = wiki.internal.sample.net
 target_port  = 80
