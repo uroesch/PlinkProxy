@@ -91,10 +91,11 @@ Below are some more details how to setup the INI file for your environment.
 
 ```ini
 [Globals]
-login         = joedoe
-path          = %ProgramFiles%\Putty
-ssh_keys_dir  = %UserProfile%\etc
-first_hop     = jumphost.acme.org
+login = joedoe
+path = %ProgramFiles%\Putty
+ssh_keys_dir = %UserProfile%\etc
+first_hop = jumphost.acme.org
+first_hop_hostkey = 01:23:45:67:89:ab:cd:ef:01:23:45:67:89:ab:cd:ef
 plink_options = -N -A -v -batch
 ```
 
@@ -102,6 +103,7 @@ plink_options = -N -A -v -batch
 * `path` is used to locate the `plink` executable. Windows command variables are
   being properly expanded.
 * `first_hop` is the jump_host which is used to initiate the second hop to the
+* `first_hop_hostkey` is the host key fingerprint shown when running `plink -v <first_hop>` (>= v0.0.15-alpha)
   final destination.
 * `plink_options` are the global options used to spawn the connection.
 
@@ -117,7 +119,9 @@ This is a handy shortcut for the `path` defintion should `plink.exe` and
 name = dmz
 enabled = yes
 setup = no
+jump_login = jamesbond
 jump_host = dmz-jumphost.acme.org
+jump_hostkey = 01:23:45:67:89:ab:cd:ef:01:23:45:67:89:ab:cd:ef
 jump_port = 2222
 ```
 
@@ -125,7 +129,9 @@ jump_port = 2222
    Equivalent to `-D 8881` on the command line.
 * `enabled` should the socks proxy be started or not. Accepts `yes` or `no`.
 * `setup` set to `yes` if the jumphost is used for the first time. Accepts `yes` or `no`
+* `jump_login` override the globals login value with a different login name. (>= v0.0.15-alpha)
 * `jump_host` defines the termination point of the Socks proxy.
+* `jump_hostkey` is the host key fingerprint shown when running `plink -v <jump_host>` (>= v0.0.15-alpha)
 * `jump_port` defines the port of `jump_host'`s connection, if ommited defaults to 22.
 
 
@@ -136,7 +142,9 @@ jump_port = 2222
 name = ldap-server
 enabled = yes
 setup = no
+jump_login = fritz
 jump_host = dmz-jumphost
+jump_hostkey = 01:23:45:67:89:ab:cd:ef:01:23:45:67:89:ab:cd:ef
 target_host = ldap.dmz.acme.org
 target_port  = 636
 ```
@@ -144,7 +152,9 @@ target_port  = 636
 * `LocalTunnel:11636` instructs to create a local tunnel port forward on `11636`.
 * `enabled` should the tunnel be started or not. Accepts `yes` or `no`.
 * `setup` set to `yes` if the jumphost is used for the first time. Accepts `yes` or `no`.
+* `jump_login` override the globals login value with a different login name. (>= v0.0.15-alpha)
 * `jump_host` defines the termination point of the tunnel.
+* `jump_hostkey` is the host key fingerprint shown when running `plink -v <jump_host>` (>= v0.0.15-alpha)
 * `target_host` forward address or ip when leaving the tunnel.
 * `target_port` forward port when leaving the tunnel.
 
@@ -159,7 +169,9 @@ With version `v0.0.10-alpha` the new tunnel type `RemoteTunnel` was introduced.
 name = vnc-remote-assistance
 enabled = yes
 setup = no
+jump_login = greta
 jump_host = jumphost.acme.org
+jump_hostkey = 01:23:45:67:89:ab:cd:ef:01:23:45:67:89:ab:cd:ef
 target_host = localhost
 target_port  = 5900
 ```
@@ -168,7 +180,9 @@ target_port  = 5900
    of the `jump_hosts`'s loopback interface.
 * `enabled` should the tunnel be started or not. Accepts `yes` or `no`.
 * `setup` set to `yes` if the jumphost is used for the first time. Accepts `yes` or `no`.
+* `jump_login` override the globals login value with a different login name. (>= v0.0.15-alpha)
 * `jump_host` defines the termination point of the tunnel where to listen for incoming traffic.
+* `jump_hostkey` is the host key fingerprint shown when running `plink -v <jump_host>` (>= v0.0.15-alpha)
 * `target_host` forward address or ip when receiving a connection on the tunnel.
 * `target_port` forward port when receiving a connection on the tunnel.
 
