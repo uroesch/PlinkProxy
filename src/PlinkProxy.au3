@@ -337,6 +337,9 @@ Func CloseTunnels()
              Logger('Info', "Shutting down tunnel '" & $TunnelId & "'")
         EndIf
     Next
+    ; Sleep half a second to let the proceesses die before
+    ; calling UpdateStatusList helps to speed up the status update.
+    Sleep(500)
     UpdateStatusList()
 EndFunc
 
