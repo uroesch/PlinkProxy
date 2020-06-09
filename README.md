@@ -7,6 +7,8 @@
 
 ## Executive Overview
 
+<img src="src/PlinkProxy-icon.svg" align="left" width="150" height="150">
+
 PlinkProxy is a small wrapper and INI configuration file around the `plink`
 command from the [`Putty`][putty] suite of tools. It is meant to dig ssh 
 tunnels and create socks proxies into various networks to cut down on 
