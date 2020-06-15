@@ -8,6 +8,7 @@
 ; --------------------------------------------------------------------------------------------------------------
 #include <Version.au3>
 #include <CommandLineParser.au3>
+#include <TunnelStruct.au3>
 #include <PlinkProxyGui.au3>
 #include <TabConstants.au3>
 #include <GUIConstantsEx.au3>
@@ -59,8 +60,6 @@ Global $ActiveButton    = Null
 Global $StatusTabParent = Null
 Global $Tabs            = _AssocArray()
 Global $Globals         = _AssocArray()
-Global $TunnelPids      = _AssocArray()
-Global $TunnelStatus    = _AssocArray()
 Global $StatusTabs      = _AssocArray()
 Global $Buttons         = _AssocArray()
 Global $RefreshInterval = 5000
@@ -79,33 +78,6 @@ EnvSet('ScriptDir', @ScriptDir)
 
 ; --------------------------------------------------------------------------------------------------------------
 ; Functions
-; --------------------------------------------------------------------------------------------------------------
-
-; Return a default value for a field default is 'n/a'
-Func DefaultValues($Field)
-    Switch $Field
-    Case 'jump_login'
-        Return $Globals('login')
-    Case 'jump_hostkey'
-        Return ''
-    Case 'jump_port'
-        Return 22
-    Case Else
-        Return 'n/a'
-    EndSwitch
-EndFunc
-
-; --------------------------------------------------------------------------------------------------------------
-
-Func _AssocArray()
-    Local $AssocArray = ObjCreate("Scripting.Dictionary")
-    If @error Then
-        Return SetError(1, 0, 0)
-    EndIf
-    $AssocArray.CompareMode = 1
-    Return $AssocArray
-EndFunc
-
 ; --------------------------------------------------------------------------------------------------------------
 
 Func Logger($Level, $Message)
@@ -128,42 +100,6 @@ Func ConfigExists()
         MsgBox(-1, 'Fatal Error', $Message)
         Exit 127
     EndIf
-EndFunc
-
-; --------------------------------------------------------------------------------------------------------------
-
-Func ReadGlobalConfig()
-    Logger('Info', 'Reading global section from ' & $ConfigFile)
-    Local $Section = IniReadSection($ConfigFile, 'Globals')
-    For $Index = 1 To $Section[0][0]
-        $Globals($Section[$Index][0]) = $Section[$Index][1]
-    Next
-EndFunc
-
-; --------------------------------------------------------------------------------------------------------------
-
-Func FetchTunnels()
-    Local $Tunnels   = []
-    Local $Sections  = IniReadSectionNames($ConfigFile)
-    For $Index = 1 To $Sections[0]
-    ; Filter special Sections without colons
-    If StringInStr($Sections[$Index], ":") Then
-       If (FetchEntry($Sections[$Index], 'enabled') == 'yes') Then
-           _ArrayAdd($Tunnels, $Sections[$Index])
-       EndIf
-    EndIf
-    Next
-    _ArraySort($Tunnels)
-    Return $Tunnels
-EndFunc
-
-; --------------------------------------------------------------------------------------------------------------
-
-Func FetchEntry($Section, $Field, $Prefix = "")
-    If $Prefix <> "" Then
-        $Section = $Prefix & ":" & $Section
-    EndIf
-    Return IniRead($ConfigFile, $Section, $Field, DefaultValues($Field))
 EndFunc
 
 ; --------------------------------------------------------------------------------------------------------------
@@ -193,11 +129,11 @@ EndFunc
 
 ; --------------------------------------------------------------------------------------------------------------
 
-Func HostKey($FingerPrint) 
+Func HostKey($FingerPrint)
     Local $HostKey = ""
     If StringRegExp($FingerPrint, $HostKeyRegExp) Then
       $HostKey = '-hostkey ' & $FingerPrint
-    EndIf 
+    EndIf
     Return $HostKey
 EndFunc
 
@@ -220,10 +156,10 @@ EndFunc
 ; --------------------------------------------------------------------------------------------------------------
 
 Func AssemblePlinkOptions($TunnelId, $Options)
-    Local $JumpHost    = FetchEntry($TunnelId, 'jump_host')
-    Local $JumpHostKey = FetchEntry($TunnelId, 'jump_hostkey')
-    Local $JumpPort    = FetchEntry($TunnelId, 'jump_port')
-    Local $Login       = FetchEntry($TunnelId, 'jump_login')
+    Local $JumpHost    = _FetchEntry($TunnelId, 'jump_host')
+    Local $JumpHostKey = _FetchEntry($TunnelId, 'jump_hostkey')
+    Local $JumpPort    = _FetchEntry($TunnelId, 'jump_port')
+    Local $Login       = _FetchEntry($TunnelId, 'jump_login')
     ; If the connectin is to forwarded port from another incoming ssh connection on the first hop
     ; then we need to set to connect host to the same value as the first_hop. Otherwise the connection
     ; is attempted locally.
@@ -243,11 +179,11 @@ EndFunc
 
 Func DigTunnel($TunnelId, $Options)
     Local $PlinkCommand
-    Local $Enabled     = FetchEntry($TunnelId, 'enabled')
-    Local $JumpPort    = FetchEntry($TunnelId, 'jump_port')
+    Local $Enabled     = _FetchEntry($TunnelId, 'enabled')
+    Local $JumpPort    = _FetchEntry($TunnelId, 'jump_port')
     Local $HideWindow  = @SW_HIDE
     Local $AllOptions  = $Globals('plink_options') & ' -P ' & $JumpPort & ' ' & $Options
-    Local $SetupMode   = StringLower(FetchEntry($TunnelId, 'setup'))
+    Local $SetupMode   = StringLower(_FetchEntry($TunnelId, 'setup'))
     ; skip non enabled tunnels
     If StringLower($Enabled) == 'no' Then
         Return
@@ -260,7 +196,7 @@ Func DigTunnel($TunnelId, $Options)
             RunWait($PlinkCommand, "", $HideWindow)
         ElseIf $SetupMode <> 'yes' Then
             $PlinkCommand = 'plink ' & AssemblePlinkOptions($TunnelId, $AllOptions)
-            $TunnelPids($TunnelId) = Run($PlinkCommand, "", $HideWindow)
+            _TunnelStore($TunnelId, 'pid', Run($PlinkCommand, "", $HideWindow))
         EndIf
         Logger('Info', "Opening tunnel '" & $TunnelId & "' with command '" & $PlinkCommand & "'")
     EndIf
@@ -277,8 +213,8 @@ EndFunc
 Func DigLocalTunnel($TunnelId)
     Local $Options = _
       "-L " & StringRegExpReplace($TunnelId, ".*:", "") _
-      & ':' & FetchEntry($TunnelId, 'target_host') _
-      & ':' & FetchEntry($TunnelId, 'target_port')
+      & ':' & _FetchEntry($TunnelId, 'target_host') _
+      & ':' & _FetchEntry($TunnelId, 'target_port')
     DigTunnel($TunnelId, $Options)
  EndFunc
 
@@ -287,18 +223,18 @@ Func DigLocalTunnel($TunnelId)
 Func DigRemoteTunnel($TunnelId)
     Local $Options = _
       "-R " & StringRegExpReplace($TunnelId, ".*:", "") _
-      & ':' & FetchEntry($TunnelId, 'target_host') _
-      & ':' & FetchEntry($TunnelId, 'target_port')
+      & ':' & _FetchEntry($TunnelId, 'target_host') _
+      & ':' & _FetchEntry($TunnelId, 'target_port')
     DigTunnel($TunnelId, $Options)
 EndFunc
 
 ; --------------------------------------------------------------------------------------------------------------
 
 Func CheckTunnel($TunnelId)
-    If ProcessExists($TunnelPids($TunnelId)) <> 0 Then
+    If ProcessExists(_TunnelFetch($TunnelId, 'pid')) <> 0 Then
         Return True
     Else
-        $TunnelPids($TunnelId) = Null
+        _TunnelStore($TunnelId, 'pid', Null)
         Return False
     EndIf
 EndFunc
@@ -307,8 +243,8 @@ EndFunc
 
 Func DigTunnels()
     ; ensure the global config values are read each time
-    ReadGlobalConfig()
-    Local $Tunnels = FetchTunnels()
+    _ReadGlobalConfig()
+    Local $Tunnels = _FetchTunnels()
     For $Index = 1 To UBound($Tunnels) - 1
         Local $TunnelId = $Tunnels[$Index]
         Select
@@ -328,12 +264,12 @@ EndFunc
 ; --------------------------------------------------------------------------------------------------------------
 
 Func CloseTunnels()
-    Local $Tunnels = FetchTunnels()
+    Local $Tunnels = _FetchTunnels()
     For $Index = 1 To UBound($Tunnels) - 1
         Local $TunnelId = $Tunnels[$Index]
         If CheckTunnel($TunnelId) Then
              ; ProcessClose is not cutting the mustard
-             Run('taskkill /t /f /pid ' & $TunnelPids($TunnelId), "", @SW_HIDE)
+             Run('taskkill /t /f /pid ' & _TunnelFetch($TunnelId, 'pid'), "", @SW_HIDE)
              Logger('Info', "Shutting down tunnel '" & $TunnelId & "'")
         EndIf
     Next
@@ -367,7 +303,7 @@ EndFunc
 
 Func Main()
     Logger('Info', 'Starting ' & @ScriptName)
-    ReadGlobalConfig()
+    _ReadGlobalConfig()
     UpdatePath()
     StartPageant()
     StartProxyGui()

@@ -122,7 +122,7 @@ Func UpdateStatusList()
     CreateStatusList()
     GuiCtrlSetBkColor($Tabs('ConnStatus'), $CanvasColor)
     GuiCtrlSetColor($Tabs('ConnStatus'), $TextColor)
-    Local $Tunnels = FetchTunnels()
+    Local $Tunnels = _FetchTunnels()
     For $Index = 1 To UBound($Tunnels) - 1
       Local $TunnelId = $Tunnels[$Index]
       UpdateStatusRow($TunnelId)
@@ -134,11 +134,11 @@ EndFunc
 
 Func UpdateStatusRow($TunnelId)
     CreateStatusList()
-    Local $Name      = FetchEntry($TunnelId, 'name')
+    Local $Name      = _FetchEntry($TunnelId, 'name')
     Local $Type      = (StringSplit($TunnelId, ':'))[1]
     Local $Port      = (StringSplit($TunnelId, ':'))[2]
     Local $Status    = CheckTunnel($TunnelId) ? 'Up' : 'Down'
-    Local $RowValues = [$Name, $Type, $Port, $Status, $TunnelPids($TunnelId)]
+    Local $RowValues = [$Name, $Type, $Port, $Status, _TunnelFetch($TunnelId, 'pid')]
     CreateStatusRow($TunnelId, $RowValues)
 EndFunc
 
@@ -158,14 +158,14 @@ Func CreateStatusRow($TunnelId, $RowValues)
         ; I could not figure out a way to color each row without the following construct. It works but I think
         ; I have to seriously look at DLLStructCreate() to have everything in one Handy location.
         Local $Handle = GUICtrlCreateListViewItem(_ArrayToString($RowValues, '|'), $Tabs('ConnStatus'))
-        $TunnelStatus($TunnelId) = $Handle
+        _TunnelStore($TunnelId, 'status', $Handle)
         ColorStatusRow($Handle, $RowValues[3])
     Else
         ; Only Update Stautus and PID
         For $Index = 3 To UBound($RowValues) - 1
             _GUICtrlListView_SetItem($Tabs('ConnStatus'), $RowValues[$Index], $Position, $Index)
         Next
-        ColorStatusRow($TunnelStatus($TunnelId), $RowValues[3])
+        ColorStatusRow(_TunnelFetch($TunnelId, 'status'), $RowValues[3])
     EndIf
     _GUICtrlListView_EndUpdate($Tabs('ConnStatus'))
 EndFunc
