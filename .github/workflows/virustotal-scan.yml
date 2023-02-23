@@ -1,13 +1,13 @@
 # -----------------------------------------------------------------------------
 # VirusTotal scan for PlinkProxy
 # Author: Urs Roesch https://github.com/uroesch copied from action example
-# Version: 0.1.0 
+# Version: 0.1.0
 # -----------------------------------------------------------------------------
 name: virustotal-scan
 
 on:
   release:
-    types: 
+    types:
       - published
 
 jobs:

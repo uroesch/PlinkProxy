@@ -225,7 +225,7 @@ Usage:
 There is a small cmd build script (`CompilePlinkProxy.cmd`) to compile and ZIP up the relase.
 
 ```
-C:> bin\CompilePlinkProxy.cmd
+C:> cmd\CompilePlinkProxy.cmd
 ```
 ## Known Issues
 - [ ] Update of status list not working correctly if name of connection was changed.

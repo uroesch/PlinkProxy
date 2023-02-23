@@ -1,17 +1,18 @@
 # -----------------------------------------------------------------------------
 # Build workflow for PlinkProxy
 # Author: Urs Roesch https://github.com/uroesch
-# Version: 0.1.0 
+# Version: 0.2.0
 # -----------------------------------------------------------------------------
 name: build-release
 
 on:
   push:
-    branches: 
+    branches:
     - workflow/*
   pull_request:
     branches:
     - master
+    - main
 
 jobs:
   build-package:
@@ -23,15 +24,15 @@ jobs:
       shell: bash
       run: |
         curl --location -o autoit-v3.zip \
-        "https://www.autoitscript.com/cgi-bin/getfile.pl?autoit3/autoit-v3.zip"
+          "https://www.autoitscript.com/cgi-bin/getfile.pl?autoit3/autoit-v3.zip"
         7z x -y autoit-v3.zip
 
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         lfs: true
 
-    - name: Run build script 
+    - name: Run build script
       shell: cmd
-      run: bin/CompilePlinkProxy.cmd
+      run: cmd/CompilePlinkProxy.cmd
       timeout-minutes: 5
