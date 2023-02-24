@@ -1,7 +1,7 @@
 # -----------------------------------------------------------------------------
 # Build workflow for PlinkProxy
 # Author: Urs Roesch https://github.com/uroesch
-# Version: 0.2.0
+# Version: 0.3.0
 # -----------------------------------------------------------------------------
 name: build-release
 
@@ -13,6 +13,7 @@ on:
     branches:
     - master
     - main
+  workflow_dispatch:
 
 jobs:
   build-package:
