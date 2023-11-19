@@ -1,0 +1,85 @@
+---
+name: Bug Report
+description: PlinkProxy bug report
+title: "[Issue]: "
+labels:
+  - bug
+assignees:
+  - uroesch
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out a bug report for PlinkProxy.
+
+  - type: textarea
+    id: what-went-wrong
+    attributes:
+      label: What went wrong?
+      description: What went wrong wenn running PlinkProxy, e.g. connection issues, crashes, etc.
+      value: Describe the problem as detailed as possible...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: source-os
+    attributes:
+      label: Operating System with Errors
+      description: Which operation system are you using?
+      multiple: true
+      options:
+        - Windows XP
+        - Windows 7
+        - Windows 8
+        - Windows 10
+        - Windows 11
+        - ReactOS 0.14
+        - ReactOS 0.15
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: source-plink
+    attributes:
+      label: Which version of Plink are you using?
+      description: Which version of plink is used with PlinkProxy?
+      multiple: true
+      options:
+        - Plink <= 0.70
+        - Plink 0.71
+        - Plink 0.72
+        - Plink 0.73
+        - Plink 0.74
+        - Plink 0.75
+        - Plink 0.76
+        - Plink 0.77
+        - Plink 0.78
+        - Plink 0.79
+    validations:
+      required: true
+
+  - type: dropdown
+    id: target-ssh-server
+    attributes:
+      label: Which type of SSH Server is on the far end.
+      description: Which SSH server is running on the far end?
+      multiple: true
+      options:
+        - Bitvise SSH Server
+        - Dropbear
+        - OpenSSH Server 6.x
+        - OpenSSH Server 7.x
+        - OpenSSH Server 8.x
+        - OpenSSH Server 9.x
+        - Don't know
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output.
+      description: Please copy and paste any relevant log output from the PlinkProxy Session Log.
+      render: plain
